@@ -6,8 +6,6 @@
     <title>Simulasi Astable Multivibrator</title>
     <!-- Memuat Tailwind CSS untuk styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Memuat Tone.js untuk menghasilkan suara (wajib di-klik Aktifkan Audio) -->
-    <script src="https://unpkg.com/tone@14.7.58/build/Tone.js"></script>
     <!-- Konfigurasi Font Inter -->
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
@@ -26,12 +24,6 @@
         .transistor { position: absolute; background-color: #374151; border: 1px solid #4b5563; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: space-around; font-size: 0.65rem; color: white; }
         .capacitor { position: absolute; background-color: #4b5563; border: 1px solid #6b7280; border-radius: 4px; color: white; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; }
         .resistor { position: absolute; background-color: #5b21b6; border-radius: 2px; color: white; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; }
-        .led-component { width: 8px; height: 12px; background-color: #ef4444; border-radius: 2px; position: absolute; transition: background-color 0.1s; }
-        .led-component-green { background-color: #10b981; }
-
-        /* Simbol GND dan VCC */
-        .gnd-symbol { width: 20px; height: 3px; background-color: #9ca3af; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); }
-        .vcc-symbol { width: 3px; height: 20px; background-color: #9ca3af; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
@@ -50,12 +42,11 @@
             <!-- BOX 1: PENJELASAN CARA KERJA -->
             <div onclick="showView('explanationView')" class="p-6 bg-indigo-50 rounded-xl border-2 border-indigo-200 hover:border-indigo-500 hover:bg-indigo-100 transition duration-300 cursor-pointer shadow-lg">
                 <h2 class="text-2xl font-bold text-indigo-700 mb-3 flex items-center">
-                    <!-- Icon SVG -->
                     <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13M18.426 6.253h-1.895M5.574 6.253h1.895M16 10h-2M8 10h2M12 14h.01M16 14h.01M8 14h.01M12 18h.01M16 18h.01M8 18h.01"></path></svg>
-                    Penjelasan Cara Kerja
+                    Penjelasan Cara Kerja (Dengan Audio)
                 </h2>
                 <p class="text-gray-700 mb-4">
-                    Pelajari komponen utama, mekanisme dua keadaan (Q1 ON / Q2 OFF), dan rumus untuk menghitung waktu kedip rangkaian.
+                    Pelajari komponen, mekanisme kerja, dan dengarkan penjelasan audio lengkap mengenai sirkuit.
                 </p>
                 <span class="text-sm font-semibold text-indigo-500">Klik untuk melihat detail →</span>
             </div>
@@ -63,12 +54,11 @@
             <!-- BOX 2: SIMULASI INTERAKTIF -->
             <div onclick="showView('simulationView')" class="p-6 bg-green-50 rounded-xl border-2 border-green-200 hover:border-green-500 hover:bg-green-100 transition duration-300 cursor-pointer shadow-lg">
                 <h2 class="text-2xl font-bold text-green-700 mb-3 flex items-center">
-                    <!-- Icon SVG -->
                     <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    Mulai Simulasi & Audio
+                    Mulai Simulasi Visual
                 </h2>
                 <p class="text-gray-700 mb-4">
-                    Jalankan rangkaian secara visual dan dengarkan pergeseran frekuensi dengan mengubah nilai kapasitor dan resistor.
+                    Jalankan rangkaian secara visual dan lihat pergeseran lampu dengan mengubah nilai kapasitor dan resistor.
                 </p>
                 <span class="text-sm font-semibold text-green-500">Klik untuk memulai →</span>
             </div>
@@ -84,6 +74,35 @@
             </button>
             <h2 class="text-2xl font-bold text-gray-800 mb-4">Ringkasan Cara Kerja Astable Multivibrator</h2>
             
+            <!-- --- BAGIAN AUDIO BARU DI SINI --- -->
+            <div class="bg-indigo-100 p-4 rounded-lg mb-6 border border-indigo-300">
+                <h3 class="text-lg font-semibold text-indigo-700 mb-3">Dengarkan Penjelasan Audio</h3>
+                
+                <audio id="audioPenjelasan">
+                    <!-- 
+                        PASTIKAN MENGGANTI PATH DI BAWAH INI DENGAN LOKASI FILE MP3 ANDA:
+                        Contoh: "penjelasan_sirkuit.mp3" jika di folder yang sama.
+                    -->
+                    <source src="audio/penjelasan_sirkuit.mp3" type="audio/mpeg">
+                    Browser Anda tidak mendukung elemen audio.
+                </audio>
+
+                <button id="tombolMainkan"
+                        class="w-full sm:w-auto px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-300 flex items-center justify-center mx-auto">
+                    <!-- Ikon Lucide Play/Pause -->
+                    <svg id="iconPlay" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    <svg id="iconPause" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 mr-2 hidden">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                    <span id="textButton">Putar Penjelasan</span>
+                </button>
+                <p id="statusAudio" class="mt-2 text-xs text-indigo-600 italic">Audio siap diputar.</p>
+            </div>
+            <!-- --- AKHIR BAGIAN AUDIO BARU --- -->
+
             <!-- Isi dari ringkasan_cara_kerja.md -->
             <div class="text-gray-700 space-y-4">
                 <h3 class="text-xl font-semibold mt-4">Komponen Utama</h3>
@@ -116,8 +135,8 @@
 
                 <p class="mt-4">Proses ini terus berulang. Waktu kedip dihitung dengan rumus:</p>
                 <div class="bg-indigo-100 p-3 rounded-lg text-center font-mono">
-                    $$\text{Waktu Kedip Tunggal} = 0.693 \times R_{\text{Basis}} \times C$$
-                    $$\text{Periode Total} (\text{T}) = 1.386 \times R_{\text{Basis}} \times C$$
+                    $$ \text{Waktu Kedip Tunggal} = 0.693 \times R_{\text{Basis}} \times C $$
+                    $$ \text{Periode Total} (\text{T}) = 1.386 \times R_{\text{Basis}} \times C $$
                 </div>
             </div>
             <!-- Akhir Isi ringkasan_cara_kerja.md -->
@@ -130,7 +149,7 @@
                 <svg class="w-4 h-4 mr-1 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
                 Kembali ke Menu Utama
             </button>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Simulasi Interaktif & Audio</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Simulasi Interaktif Visual</h2>
 
             <!-- Area Input Kontrol -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-4 bg-indigo-50 rounded-lg">
@@ -143,7 +162,7 @@
                     <input type="number" id="capacitorValue" value="100" min="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition duration-150" onchange="updateSimulation()" onkeyup="updateSimulation()">
                 </div>
                 <div class="md:col-span-2 text-sm text-gray-500 mt-2">
-                    *Nilai di atas menentukan waktu kedip (frekuensi).
+                    *Nilai di atas menentukan waktu kedip (frekuensi) rangkaian.
                 </div>
             </div>
 
@@ -171,6 +190,7 @@
                 <h2 class="text-xl font-semibold text-gray-100 mb-4 text-center">Visualisasi Rangkaian Detail & Alur Kerja</h2>
                 
                 <div class="circuit-container">
+                    <!-- Circuit components and lines (same as before) -->
                     <div class="gnd-symbol" style="left: 50%; bottom: 20px; transform: translateX(-50%);"></div>
                     <div class="vcc-symbol" style="left: 50%; top: 10px; transform: translateX(-50%);"></div>
                     <div class="component-label text-white font-bold" style="top: 10px; left: 50%; transform: translate(-50%, -100%);">VCC (+9V)</div>
@@ -281,9 +301,6 @@
 
             <!-- Kontrol Simulasi -->
             <div class="flex flex-col sm:flex-row justify-center mt-8 space-y-4 sm:space-y-0 sm:space-x-4">
-               <!-- <button id="audioButton" onclick="initAudio()" class="px-6 py-3 bg-yellow-600 text-white font-bold rounded-full shadow-lg hover:bg-yellow-700 transition duration-300 transform hover:scale-105">
-                    Aktifkan Audio
-                </button>-->
                 <button id="startButton" onclick="toggleSimulation()" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105">
                     Mulai Simulasi
                 </button>
@@ -295,7 +312,7 @@
         <!-- END SIMULATION VIEW -->
 
         <div class="mt-8 pt-4 border-t text-gray-500 text-xs text-center">
-            Prinsip Astable Multivibrator. Dibuat dengan Tailwind CSS dan Tone.js.
+            Prinsip Astable Multivibrator. Dibuat dengan Tailwind CSS.
         </div>
 
     </div>
@@ -306,10 +323,8 @@
         let isRunning = false;
         let currentToggleState = 0; // 0: Q1 ON (LED A OFF, B ON); 1: Q2 ON (LED B OFF, A ON)
         let halfPeriod = 0;
-        let isAudioEnabled = false;
-        let synth = null;
 
-        // Elemen UI
+        // Elemen UI Simulasi
         const R_Input = document.getElementById('resistorValue');
         const C_Input = document.getElementById('capacitorValue');
         const periodDisplay = document.getElementById('periodDisplay');
@@ -323,7 +338,6 @@
         const ledB2 = document.getElementById('led-b2'); 
         const startButton = document.getElementById('startButton');
         const stopButton = document.getElementById('stopButton');
-        const audioButton = document.getElementById('audioButton');
         const currentStateTitle = document.getElementById('currentStateTitle');
         const workflowExplanation = document.getElementById('workflowExplanation');
 
@@ -339,7 +353,17 @@
             'line-c1-qc2-h', 'line-c1-qc2-v', 'line-c2-qc1-h', 'line-c2-qc1-v'
         ];
         const lines = lineIds.map(id => document.getElementById(id));
+
+
+        // Elemen UI Audio Penjelasan
+        const audio = document.getElementById('audioPenjelasan');
+        const tombolMainkan = document.getElementById('tombolMainkan');
+        const textButton = document.getElementById('textButton');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        const statusAudio = document.getElementById('statusAudio');
         
+
         // --- FUNGSI NAVIGASI TAMPILAN ---
         function showView(viewId) {
             document.getElementById('menuView').classList.add('hidden');
@@ -352,50 +376,63 @@
             if (viewId !== 'simulationView') {
                 resetSimulation();
             } else {
-                // Pastikan simulasi siap saat beralih ke tampilan simulasi
                 calculateValues();
                 resetSimulation();
             }
-        }
 
-        // --- FUNGSI AUDIO ---
-        function initAudio() {
-            if (isAudioEnabled) return;
-
-            // Membangun Synth sederhana (perkusi)
-            synth = new Tone.MembraneSynth({
-                pitchDecay: 0.05,
-                octaves: 2,
-                envelope: {
-                    attack: 0.001,
-                    decay: 0.4,
-                    sustain: 0.001,
-                    release: 0.05,
-                },
-            }).toDestination();
-
-            // Mengaktifkan AudioContext
-            Tone.start().then(() => {
-                isAudioEnabled = true;
-                audioButton.textContent = 'Audio: AKTIF';
-                audioButton.classList.remove('bg-yellow-600', 'hover:bg-yellow-700', 'transform', 'hover:scale-105');
-                audioButton.classList.add('bg-green-600');
-                audioButton.disabled = true;
-                console.log("Audio Context diaktifkan.");
-            }).catch(e => {
-                console.error("Gagal memulai Audio Context:", e);
-                currentStateTitle.textContent = 'AUDIO GAGAL';
-                workflowExplanation.innerHTML = '<span class="text-red-400">Audio gagal diaktifkan.</span> Coba refresh atau jalankan di lingkungan browser penuh.';
-            });
-        }
-
-        function playSound() {
-            if (isAudioEnabled && synth) {
-                const freq = Math.min(1000, Math.max(100, 1 / (halfPeriod / 1000) * 150));
-                synth.triggerAttackRelease(freq, "8n");
+            // PAUSE AUDIO PENJELASAN JIKA PINDAH KE SIMULASI
+            if (audio && !audio.paused && viewId === 'simulationView') {
+                audio.pause();
+                updateAudioControls(false, 'Dijeda otomatis.');
             }
         }
-        // --- AKHIR FUNGSI AUDIO ---
+
+
+        // --- FUNGSI KONTROL AUDIO PENJELASAN (DI EXPLANATION VIEW) ---
+        function updateAudioControls(isPlaying, statusText) {
+            if (isPlaying) {
+                tombolMainkan.setAttribute('data-playing', 'true');
+                textButton.textContent = 'Jeda Penjelasan';
+                iconPlay.classList.add('hidden');
+                iconPause.classList.remove('hidden');
+            } else {
+                tombolMainkan.setAttribute('data-playing', 'false');
+                textButton.textContent = 'Lanjutkan Penjelasan';
+                iconPlay.classList.remove('hidden');
+                iconPause.classList.add('hidden');
+            }
+            statusAudio.textContent = statusText;
+        }
+
+        // Event Listener untuk Audio
+        if (tombolMainkan) {
+            tombolMainkan.addEventListener('click', () => {
+                if (audio.paused || audio.ended) {
+                    audio.load(); // Memastikan audio dimuat ulang jika perlu
+                    audio.play()
+                        .then(() => {
+                            updateAudioControls(true, 'Memutar...');
+                        })
+                        .catch(error => {
+                            console.error('Gagal memutar audio:', error);
+                            updateAudioControls(false, 'Gagal memutar audio. Cek konsol dan path file.');
+                        });
+                } else {
+                    audio.pause();
+                    updateAudioControls(false, 'Dijeda.');
+                }
+            });
+
+            audio.addEventListener('ended', () => {
+                updateAudioControls(false, 'Selesai diputar.');
+                textButton.textContent = 'Putar Ulang Penjelasan';
+            });
+
+            audio.addEventListener('error', (e) => {
+                console.error('Terjadi kesalahan pada audio. File mungkin tidak ditemukan.', e);
+                updateAudioControls(false, 'ERROR: File audio tidak dapat dimuat. Pastikan "src" benar.');
+            });
+        }
 
 
         /**
@@ -460,8 +497,6 @@
          */
         function updateVisuals() {
             if (!isRunning) return;
-
-            playSound(); 
             
             // Atur jalur VCC dan GND
             setLineState('line-vcc', 'CHARGE'); 
