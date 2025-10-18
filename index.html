@@ -6,6 +6,8 @@
     <title>Simulasi Astable Multivibrator</title>
     <!-- Memuat Tailwind CSS untuk styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Tone.js untuk menghasilkan suara (wajib di-klik Aktifkan Audio) -->
+    <script src="https://unpkg.com/tone@14.7.58/build/Tone.js"></script>
     <!-- Konfigurasi Font Inter -->
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
@@ -36,171 +38,264 @@
 
     <div class="w-full max-w-4xl bg-white rounded-xl shadow-2xl p-6 md:p-10 border-t-4 border-indigo-600">
         <h1 class="text-3xl font-extrabold text-gray-900 mb-4 text-center">
-            Simulasi Astable Multivibrator <br class="md:hidden"> (Rangkaian Detail)
+            Simulasi Astable Multivibrator
         </h1>
         <p class="text-center text-gray-600 mb-8">
-            Visualisasi sirkuit yang detail berdasarkan skema 4 LED Anda, menggunakan transistor **C945**.
+            Pilih menu di bawah untuk memulai.
         </p>
-        
-        <!-- Area Input Kontrol (Menggunakan nilai default dari skema Anda) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-4 bg-indigo-50 rounded-lg">
-            <div>
-                <label for="resistorValue" class="block text-sm font-medium text-gray-700 mb-1">Resistor Basis (R1 & R2, kΩ):</label>
-                <input type="number" id="resistorValue" value="56" min="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition duration-150" onchange="updateSimulation()" onkeyup="updateSimulation()">
-            </div>
-            <div>
-                <label for="capacitorValue" class="block text-sm font-medium text-gray-700 mb-1">Kapasitor (C1 & C2, µF):</label>
-                <input type="number" id="capacitorValue" value="100" min="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition duration-150" onchange="updateSimulation()" onkeyup="updateSimulation()">
-            </div>
-            <div class="md:col-span-2 text-sm text-gray-500 mt-2">
-                *Nilai di atas menentukan waktu kedip (frekuensi). Transistor yang digunakan adalah **C945**.
-            </div>
-        </div>
 
-        <!-- Area Output dan Hasil Perhitungan -->
-        <div class="bg-white border border-gray-200 rounded-xl p-6 mb-8 shadow-inner">
-            <h2 class="text-xl font-semibold text-gray-800 mb-3 border-b pb-2">Hasil Perhitungan</h2>
-            <div class="flex flex-col sm:flex-row justify-around space-y-4 sm:space-y-0 sm:space-x-4 text-center">
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Periode Total (T)</p>
-                    <p id="periodDisplay" class="text-2xl font-bold text-indigo-600">0.00 s</p>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Frekuensi (f)</p>
-                    <p id="frequencyDisplay" class="text-2xl font-bold text-indigo-600">0.00 Hz</p>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Waktu Kedip Tunggal (T/2)</p>
-                    <p id="halfPeriodDisplay" class="text-2xl font-bold text-indigo-600">0.00 s</p>
-                </div>
-            </div>
-        </div>
+        <!-- MENU VIEW (Initial View) -->
+        <div id="menuView" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        <!-- Area Visualisasi Sirkuit Detail -->
-        <div class="p-4 bg-gray-800 rounded-xl border border-gray-700 shadow-xl">
-            <h2 class="text-xl font-semibold text-gray-100 mb-4 text-center">Visualisasi Rangkaian Detail & Alur Kerja</h2>
+            <!-- BOX 1: PENJELASAN CARA KERJA -->
+            <div onclick="showView('explanationView')" class="p-6 bg-indigo-50 rounded-xl border-2 border-indigo-200 hover:border-indigo-500 hover:bg-indigo-100 transition duration-300 cursor-pointer shadow-lg">
+                <h2 class="text-2xl font-bold text-indigo-700 mb-3 flex items-center">
+                    <!-- Icon SVG -->
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13M18.426 6.253h-1.895M5.574 6.253h1.895M16 10h-2M8 10h2M12 14h.01M16 14h.01M8 14h.01M12 18h.01M16 18h.01M8 18h.01"></path></svg>
+                    Penjelasan Cara Kerja
+                </h2>
+                <p class="text-gray-700 mb-4">
+                    Pelajari komponen utama, mekanisme dua keadaan (Q1 ON / Q2 OFF), dan rumus untuk menghitung waktu kedip rangkaian.
+                </p>
+                <span class="text-sm font-semibold text-indigo-500">Klik untuk melihat detail →</span>
+            </div>
+
+            <!-- BOX 2: SIMULASI INTERAKTIF -->
+            <div onclick="showView('simulationView')" class="p-6 bg-green-50 rounded-xl border-2 border-green-200 hover:border-green-500 hover:bg-green-100 transition duration-300 cursor-pointer shadow-lg">
+                <h2 class="text-2xl font-bold text-green-700 mb-3 flex items-center">
+                    <!-- Icon SVG -->
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Mulai Simulasi & Audio
+                </h2>
+                <p class="text-gray-700 mb-4">
+                    Jalankan rangkaian secara visual dan dengarkan pergeseran frekuensi dengan mengubah nilai kapasitor dan resistor.
+                </p>
+                <span class="text-sm font-semibold text-green-500">Klik untuk memulai →</span>
+            </div>
+
+        </div> 
+        <!-- END MENU VIEW -->
+
+        <!-- EXPLANATION VIEW (Hidden Initially) -->
+        <div id="explanationView" class="hidden mt-8 p-6 bg-gray-50 rounded-xl border border-gray-300">
+            <button onclick="showView('menuView')" class="mb-4 text-indigo-600 hover:text-indigo-800 font-semibold flex items-center transition duration-150">
+                <svg class="w-4 h-4 mr-1 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                Kembali ke Menu Utama
+            </button>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Ringkasan Cara Kerja Astable Multivibrator</h2>
             
-            <div class="circuit-container">
-                <div class="gnd-symbol" style="left: 50%; bottom: 10px; transform: translateX(-50%);"></div>
-                <div class="vcc-symbol" style="left: 50%; top: 10px; transform: translateX(-50%);"></div>
-                <div class="component-label text-white font-bold" style="top: 10px; left: 50%; transform: translate(-50%, -100%);">VCC (+9V)</div>
-                <div class="component-label text-white font-bold" style="bottom: 10px; left: 50%; transform: translate(-50%, 100%);">GND</div>
+            <!-- Isi dari ringkasan_cara_kerja.md -->
+            <div class="text-gray-700 space-y-4">
+                <h3 class="text-xl font-semibold mt-4">Komponen Utama</h3>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li>**Dua Transistor (Q1 dan Q2):** Bertindak sebagai sakelar, bergantian antara mode ON (Saturasi) dan OFF (Cut-off).</li>
+                    <li>**Dua Kapasitor (C1 dan C2):** Berfungsi menyimpan energi dan menyediakan sinyal umpan balik positif yang memicu Transistor lain untuk mati.</li>
+                    <li>**Resistor (R1, R2, dan Resistor Kolektor):** Mengatur laju pengisian muatan kapasitor dan membatasi arus LED.</li>
+                </ul>
 
-                <!-- Jalur VCC Horizontal Top -->
-                <div id="line-vcc" class="line active-line-green" style="left: 20px; top: 20px; width: calc(100% - 40px); height: 3px;"></div>
+                <h3 class="text-xl font-semibold mt-4">Mekanisme Kerja (Dua Keadaan)</h3>
+                <p>Rangkaian selalu memulai di salah satu dari dua keadaan yang tidak stabil ini:</p>
 
-                <!-- Jalur GND Horizontal Bottom -->
-                <div id="line-gnd" class="line" style="left: 20px; bottom: 20px; width: calc(100% - 40px); height: 3px; background-color: #6b7280;"></div>
-
-                <!-- --- SISI KIRI (Q1) --- -->
+                <h4 class="text-lg font-medium text-indigo-600">Keadaan 1: Q1 ON dan Q2 OFF</h4>
+                <ol class="list-decimal list-inside ml-4 space-y-1">
+                    <li>**Q1 ON:** Karena ketidakseimbangan kecil di rangkaian, Q1 menjadi ON (Saturasi).</li>
+                    <li>**Kolektor Q1 Rendah:** Tegangan pada Kolektor Q1 turun mendekati 0V.</li>
+                    <li>**Q2 OFF (Kapasitor Pemicu):** Kapasitor **C2** menyalurkan tegangan rendah ini ke Basis Q2, menjaga Q2 dalam keadaan OFF (Cut-off).</li>
+                    <li>**LED Menyala:** LED yang terhubung ke Kolektor Q2 (**Sisi Hijau**) dapat menyala dari VCC.</li>
+                    <li>**Pengisian C1:** Kapasitor **C1** mulai mengisi muatan melalui Resistor Basis **R2** menuju VCC.</li>
+                </ol>
                 
-                <!-- LED D2 & D2' (Side 2 - Hijau) -->
-                <div id="led-b1" class="w-3 h-3 rounded-full led-off border-2 border-gray-400" style="left: 25%; top: 35px; transform: translateX(-50%);"></div>
-                <div id="led-b2" class="w-3 h-3 rounded-full led-off border-2 border-gray-400" style="left: 25%; top: 60px; transform: translateX(-50%);"></div>
-                <div class="component-label" style="top: 40px; left: calc(25% + 5px);">D2, D2'</div>
+                <h4 class="text-lg font-medium text-indigo-600">Keadaan 2: Q2 ON dan Q1 OFF</h4>
+                <ol class="list-decimal list-inside ml-4 space-y-1">
+                    <li>**Q2 ON (Pemicu Transisi):** Setelah C1 terisi muatan hingga mencapai 0.7V, Q2 langsung beralih ke mode Saturasi (ON).</li>
+                    <li>**Kolektor Q2 Rendah:** Tegangan pada Kolektor Q2 turun mendekati 0V.</li>
+                    <li>**Q1 OFF (Kapasitor Pemicu):** Kapasitor **C1** menyalurkan tegangan rendah ini ke Basis Q1, memaksa Q1 untuk segera beralih ke mode OFF.</li>
+                    <li>**LED Menyala:** LED yang terhubung ke Kolektor Q1 (**Sisi Merah**) dapat menyala dari VCC.</li>
+                    <li>**Pengisian C2:** Kapasitor **C2** mulai mengisi muatan melalui Resistor Basis **R1** menuju VCC.</li>
+                </ol>
 
-                <!-- Jalur Kolektor Q1 -->
-                <div id="line-qc1-vcc" class="line" style="left: 25%; top: 20px; height: 15px; width: 3px; transform: translateX(-50%);"></div>
-                <div id="line-qc1-led" class="line" style="left: 25%; top: 75px; height: 50px; width: 3px; transform: translateX(-50%);"></div>
+                <p class="mt-4">Proses ini terus berulang. Waktu kedip dihitung dengan rumus:</p>
+                <div class="bg-indigo-100 p-3 rounded-lg text-center font-mono">
+                    $$\text{Waktu Kedip Tunggal} = 0.693 \times R_{\text{Basis}} \times C$$
+                    $$\text{Periode Total} (\text{T}) = 1.386 \times R_{\text{Basis}} \times C$$
+                </div>
+            </div>
+            <!-- Akhir Isi ringkasan_cara_kerja.md -->
+        </div>
+        <!-- END EXPLANATION VIEW -->
 
-                <!-- Q1 (Transistor Kiri) -->
-                <div id="Q1" class="transistor bg-blue-600" style="width: 30px; height: 40px; left: 25%; top: 130px; transform: translateX(-50%);">Q1 (C945)</div>
-                <!-- Koneksi Kolektor/Emitor Q1 -->
-                <div id="line-q1-c" class="line" style="left: 25%; top: 125px; height: 5px; width: 3px; transform: translateX(-50%);"></div>
-                <div id="line-q1-e" class="line" style="left: 25%; top: 170px; height: 50px; width: 3px; transform: translateX(-50%);"></div>
-                <div id="line-q1-e-gnd" class="line" style="left: 25%; bottom: 20px; height: 3px; width: calc(50% - 25%);"></div>
+        <!-- SIMULATION VIEW (Hidden Initially) -->
+        <div id="simulationView" class="hidden">
+            <button onclick="showView('menuView')" class="mb-4 text-indigo-600 hover:text-indigo-800 font-semibold flex items-center transition duration-150">
+                <svg class="w-4 h-4 mr-1 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                Kembali ke Menu Utama
+            </button>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Simulasi Interaktif & Audio</h2>
 
-                <!-- R2 (Resistor Basis Q2) -->
-                <div id="R2" class="resistor" style="width: 30px; height: 15px; left: 35%; top: 40px; transform: translateX(-50%);">R2</div>
-                <div class="component-label" style="top: 40px; left: calc(35% - 25px); color: #818cf8;">56kΩ</div>
-                <div id="line-r2-vcc" class="line" style="left: 35%; top: 20px; height: 20px; width: 3px; transform: translateX(-50%);"></div>
-                
-                <!-- C1 (Kapasitor Kiri) -->
-                <div id="C1" class="capacitor bg-green-600" style="width: 20px; height: 30px; left: 35%; top: 120px; transform: translateX(-50%);">C1</div>
-                <div class="component-label" style="top: 130px; left: calc(35% + 15px); color: #6ee7b7;">100µF</div>
-                <!-- Koneksi C1 ke R2 -->
-                <div id="line-r2-c1" class="line" style="left: 35%; top: 55px; height: 65px; width: 3px; transform: translateX(-50%);"></div>
-                <!-- Koneksi C1 ke Basis Q2 -->
-                <div id="line-c1-q2b" class="line" style="left: 35%; top: 150px; height: 3px; width: 35px;"></div>
-                
-
-                <!-- --- SISI KANAN (Q2) --- -->
-
-                <!-- LED D1 & D1' (Side 1 - Merah) -->
-                <div id="led-a1" class="w-3 h-3 rounded-full led-off border-2 border-gray-400" style="left: 75%; top: 35px; transform: translateX(-50%);"></div>
-                <div id="led-a2" class="w-3 h-3 rounded-full led-off border-2 border-gray-400" style="left: 75%; top: 60px; transform: translateX(-50%);"></div>
-                <div class="component-label" style="top: 40px; left: calc(75% + 5px);">D1, D1'</div>
-
-                <!-- Jalur Kolektor Q2 -->
-                <div id="line-qc2-vcc" class="line" style="left: 75%; top: 20px; height: 15px; width: 3px; transform: translateX(-50%);"></div>
-                <div id="line-qc2-led" class="line" style="left: 75%; top: 75px; height: 50px; width: 3px; transform: translateX(-50%);"></div>
-
-                <!-- Q2 (Transistor Kanan) -->
-                <div id="Q2" class="transistor bg-blue-600" style="width: 30px; height: 40px; left: 75%; top: 130px; transform: translateX(-50%);">Q2 (C945)</div>
-                <!-- Koneksi Kolektor/Emitor Q2 -->
-                <div id="line-q2-c" class="line" style="left: 75%; top: 125px; height: 5px; width: 3px; transform: translateX(-50%);"></div>
-                <div id="line-q2-e" class="line" style="left: 75%; top: 170px; height: 50px; width: 3px; transform: translateX(-50%);"></div>
-                <div id="line-q2-e-gnd" class="line" style="right: 25%; bottom: 20px; height: 3px; width: calc(50% - 25%);"></div>
-
-                <!-- R1 (Resistor Basis Q1) -->
-                <div id="R1" class="resistor" style="width: 30px; height: 15px; right: 35%; top: 40px; transform: translateX(50%);">R1</div>
-                <div class="component-label" style="top: 40px; right: calc(35% - 25px); color: #818cf8;">56kΩ</div>
-                <div id="line-r1-vcc" class="line" style="right: 35%; top: 20px; height: 20px; width: 3px; transform: translateX(50%);"></div>
-                
-                <!-- C2 (Kapasitor Kanan) -->
-                <div id="C2" class="capacitor bg-green-600" style="width: 20px; height: 30px; right: 35%; top: 120px; transform: translateX(50%);">C2</div>
-                <div class="component-label" style="top: 130px; right: calc(35% + 15px); color: #6ee7b7;">100µF</div>
-                <!-- Koneksi C2 ke R1 -->
-                <div id="line-r1-c2" class="line" style="right: 35%; top: 55px; height: 65px; width: 3px; transform: translateX(50%);"></div>
-                <!-- Koneksi C2 ke Basis Q1 -->
-                <div id="line-c2-q1b" class="line" style="right: 35%; top: 150px; height: 3px; width: 35px; right: 35%; transform: translateX(100%);"></div>
-
-                <!-- Koneksi Basis Q1 ke C2 -->
-                <div id="line-q1b-c2" class="line" style="left: 25%; top: 150px; height: 3px; width: 20px;"></div>
-                <!-- Koneksi Basis Q2 ke C1 -->
-                <div id="line-q2b-c1" class="line" style="left: 75%; top: 150px; height: 3px; width: 20px; right: 35%; transform: translateX(-100%);"></div>
-                
-                <!-- Hubungan C1 ke Kolektor Q2 -->
-                <div id="line-c1-qc2-h" class="line" style="right: 25%; top: 120px; width: 20px; height: 3px;"></div>
-                <div id="line-c1-qc2-v" class="line" style="right: 25%; top: 75px; width: 3px; height: 45px;"></div>
-
-                <!-- Hubungan C2 ke Kolektor Q1 -->
-                <div id="line-c2-qc1-h" class="line" style="left: 25%; top: 120px; width: 20px; height: 3px; transform: translateX(-100%);"></div>
-                <div id="line-c2-qc1-v" class="line" style="left: 25%; top: 75px; width: 3px; height: 45px;"></div>
-
-
-                <!-- Label Basis, Kolektor, Emitor -->
-                <div class="component-label" style="left: calc(25% + 15px); top: 150px;">B</div>
-                <div class="component-label" style="left: 25%; top: 110px; transform: translateX(-50%);">C</div>
-                <div class="component-label" style="left: 25%; top: 190px; transform: translateX(-50%);">E</div>
-
-                <div class="component-label" style="right: calc(25% + 15px); top: 150px; transform: translateX(100%);">B</div>
-                <div class="component-label" style="left: 75%; top: 110px; transform: translateX(-50%);">C</div>
-                <div class="component-label" style="left: 75%; top: 190px; transform: translateX(-50%);">E</div>
-
+            <!-- Area Input Kontrol -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-4 bg-indigo-50 rounded-lg">
+                <div>
+                    <label for="resistorValue" class="block text-sm font-medium text-gray-700 mb-1">Resistor Basis (R1 & R2, kΩ):</label>
+                    <input type="number" id="resistorValue" value="56" min="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition duration-150" onchange="updateSimulation()" onkeyup="updateSimulation()">
+                </div>
+                <div>
+                    <label for="capacitorValue" class="block text-sm font-medium text-gray-700 mb-1">Kapasitor (C1 & C2, µF):</label>
+                    <input type="number" id="capacitorValue" value="100" min="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition duration-150" onchange="updateSimulation()" onkeyup="updateSimulation()">
+                </div>
+                <div class="md:col-span-2 text-sm text-gray-500 mt-2">
+                    *Nilai di atas menentukan waktu kedip (frekuensi).
+                </div>
             </div>
 
-            <!-- Area Penjelasan Alur Kerja Dinamis -->
-            <div class="mt-6 p-4 bg-gray-900 rounded-lg border border-indigo-500">
-                 <h3 class="text-lg font-bold text-indigo-400 mb-2">Alur Kerja Saat Ini: <span id="currentStateTitle" class="text-white">SIAP</span></h3>
-                 <p id="workflowExplanation" class="text-sm text-gray-300">
-                    Tekan "Mulai Simulasi" untuk melihat bagaimana kedua transistor dan kapasitor bekerja secara bergantian. Garis yang **berwarna terang** menunjukkan jalur arus yang **aktif**.
-                 </p>
+            <!-- Area Output dan Hasil Perhitungan -->
+            <div class="bg-white border border-gray-200 rounded-xl p-6 mb-8 shadow-inner">
+                <h2 class="text-xl font-semibold text-gray-800 mb-3 border-b pb-2">Hasil Perhitungan</h2>
+                <div class="flex flex-col sm:flex-row justify-around space-y-4 sm:space-y-0 sm:space-x-4 text-center">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Periode Total (T)</p>
+                        <p id="periodDisplay" class="text-2xl font-bold text-indigo-600">0.00 s</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Frekuensi (f)</p>
+                        <p id="frequencyDisplay" class="text-2xl font-bold text-indigo-600">0.00 Hz</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Waktu Kedip Tunggal (T/2)</p>
+                        <p id="halfPeriodDisplay" class="text-2xl font-bold text-indigo-600">0.00 s</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Area Visualisasi Sirkuit Detail -->
+            <div class="p-4 bg-gray-800 rounded-xl border border-gray-700 shadow-xl">
+                <h2 class="text-xl font-semibold text-gray-100 mb-4 text-center">Visualisasi Rangkaian Detail & Alur Kerja</h2>
+                
+                <div class="circuit-container">
+                    <div class="gnd-symbol" style="left: 50%; bottom: 20px; transform: translateX(-50%);"></div>
+                    <div class="vcc-symbol" style="left: 50%; top: 10px; transform: translateX(-50%);"></div>
+                    <div class="component-label text-white font-bold" style="top: 10px; left: 50%; transform: translate(-50%, -100%);">VCC (+9V)</div>
+                    <div class="component-label text-white font-bold" style="bottom: 20px; left: 50%; transform: translate(-50%, 100%);">GND</div>
+
+                    <!-- Jalur VCC Horizontal Top -->
+                    <div id="line-vcc" class="line" style="left: 20px; top: 20px; width: calc(100% - 40px); height: 3px;"></div>
+
+                    <!-- Jalur GND Horizontal Bottom -->
+                    <div id="line-gnd" class="line" style="left: 20px; bottom: 20px; width: calc(100% - 40px); height: 3px; background-color: #6b7280;"></div>
+
+                    <!-- --- SISI KIRI (Q1) --- -->
+                    
+                    <!-- LED D2 & D2' (Side 2 - Hijau) -->
+                    <div id="led-b1" class="w-3 h-3 rounded-full led-off border-2 border-gray-400" style="left: 25%; top: 35px; transform: translateX(-50%);"></div>
+                    <div id="led-b2" class="w-3 h-3 rounded-full led-off border-2 border-gray-400" style="left: 25%; top: 60px; transform: translateX(-50%);"></div>
+                    <div class="component-label" style="top: 40px; left: calc(25% + 5px);">D2, D2'</div>
+
+                    <!-- Jalur Kolektor Q1 -->
+                    <div id="line-qc1-vcc" class="line" style="left: 25%; top: 20px; height: 15px; width: 3px; transform: translateX(-50%);"></div>
+                    <div id="line-qc1-led" class="line" style="left: 25%; top: 75px; height: 50px; width: 3px; transform: translateX(-50%);"></div>
+
+                    <!-- Q1 (Transistor Kiri) -->
+                    <div id="Q1" class="transistor bg-blue-600" style="width: 30px; height: 40px; left: 25%; top: 130px; transform: translateX(-50%);">Q1 (C945)</div>
+                    <!-- Koneksi Kolektor/Emitor Q1 -->
+                    <div id="line-q1-c" class="line" style="left: 25%; top: 125px; height: 5px; width: 3px; transform: translateX(-50%);"></div>
+                    <div id="line-q1-e" class="line" style="left: 25%; top: 170px; height: 50px; width: 3px; transform: translateX(-50%);"></div>
+                    <div id="line-q1-e-gnd" class="line" style="left: 25%; bottom: 20px; height: 3px; width: calc(50% - 25%);"></div>
+
+                    <!-- R2 (Resistor Basis Q2) -->
+                    <div id="R2" class="resistor" style="width: 30px; height: 15px; left: 35%; top: 40px; transform: translateX(-50%);">R2</div>
+                    <div class="component-label" style="top: 40px; left: calc(35% - 25px); color: #818cf8;">56kΩ</div>
+                    <div id="line-r2-vcc" class="line" style="left: 35%; top: 20px; height: 20px; width: 3px; transform: translateX(-50%);"></div>
+                    
+                    <!-- C1 (Kapasitor Kiri) -->
+                    <div id="C1" class="capacitor bg-green-600" style="width: 20px; height: 30px; left: 35%; top: 120px; transform: translateX(-50%);">C1</div>
+                    <div class="component-label" style="top: 130px; left: calc(35% + 15px); color: #6ee7b7;">100µF</div>
+                    <!-- Koneksi C1 ke R2 -->
+                    <div id="line-r2-c1" class="line" style="left: 35%; top: 55px; height: 65px; width: 3px; transform: translateX(-50%);"></div>
+                    <!-- Koneksi C1 ke Basis Q2 -->
+                    <div id="line-c1-q2b" class="line" style="left: 35%; top: 150px; height: 3px; width: 35px;"></div>
+                    
+
+                    <!-- --- SISI KANAN (Q2) --- -->
+
+                    <!-- LED D1 & D1' (Side 1 - Merah) -->
+                    <div id="led-a1" class="w-3 h-3 rounded-full led-off border-2 border-gray-400" style="left: 75%; top: 35px; transform: translateX(-50%);"></div>
+                    <div id="led-a2" class="w-3 h-3 rounded-full led-off border-2 border-gray-400" style="left: 75%; top: 60px; transform: translateX(-50%);"></div>
+                    <div class="component-label" style="top: 40px; left: calc(75% + 5px);">D1, D1'</div>
+
+                    <!-- Jalur Kolektor Q2 -->
+                    <div id="line-qc2-vcc" class="line" style="left: 75%; top: 20px; height: 15px; width: 3px; transform: translateX(-50%);"></div>
+                    <div id="line-qc2-led" class="line" style="left: 75%; top: 75px; height: 50px; width: 3px; transform: translateX(-50%);"></div>
+
+                    <!-- Q2 (Transistor Kanan) -->
+                    <div id="Q2" class="transistor bg-blue-600" style="width: 30px; height: 40px; left: 75%; top: 130px; transform: translateX(-50%);">Q2 (C945)</div>
+                    <!-- Koneksi Kolektor/Emitor Q2 -->
+                    <div id="line-q2-c" class="line" style="left: 75%; top: 125px; height: 5px; width: 3px; transform: translateX(-50%);"></div>
+                    <div id="line-q2-e" class="line" style="left: 75%; top: 170px; height: 50px; width: 3px; transform: translateX(-50%);"></div>
+                    <div id="line-q2-e-gnd" class="line" style="right: 25%; bottom: 20px; height: 3px; width: calc(50% - 25%);"></div>
+
+                    <!-- R1 (Resistor Basis Q1) -->
+                    <div id="R1" class="resistor" style="width: 30px; height: 15px; right: 35%; top: 40px; transform: translateX(50%);">R1</div>
+                    <div class="component-label" style="top: 40px; right: calc(35% - 25px); color: #818cf8;">56kΩ</div>
+                    <div id="line-r1-vcc" class="line" style="right: 35%; top: 20px; height: 20px; width: 3px; transform: translateX(50%);"></div>
+                    
+                    <!-- C2 (Kapasitor Kanan) -->
+                    <div id="C2" class="capacitor bg-green-600" style="width: 20px; height: 30px; right: 35%; top: 120px; transform: translateX(50%);">C2</div>
+                    <div class="component-label" style="top: 130px; right: calc(35% + 15px); color: #6ee7b7;">100µF</div>
+                    <!-- Koneksi C2 ke R1 -->
+                    <div id="line-r1-c2" class="line" style="right: 35%; top: 55px; height: 65px; width: 3px; transform: translateX(50%);"></div>
+                    <!-- Koneksi C2 ke Basis Q1 -->
+                    <div id="line-c2-q1b" class="line" style="right: 35%; top: 150px; height: 3px; width: 35px; right: 35%; transform: translateX(100%);"></div>
+
+                    <!-- Koneksi Basis Q1 ke C2 -->
+                    <div id="line-q1b-c2" class="line" style="left: 25%; top: 150px; height: 3px; width: 20px;"></div>
+                    <!-- Koneksi Basis Q2 ke C1 -->
+                    <div id="line-q2b-c1" class="line" style="left: 75%; top: 150px; height: 3px; width: 20px; right: 35%; transform: translateX(-100%);"></div>
+                    
+                    <!-- Hubungan C1 ke Kolektor Q2 -->
+                    <div id="line-c1-qc2-h" class="line" style="right: 25%; top: 120px; width: 20px; height: 3px;"></div>
+                    <div id="line-c1-qc2-v" class="line" style="right: 25%; top: 75px; width: 3px; height: 45px;"></div>
+
+                    <!-- Hubungan C2 ke Kolektor Q1 -->
+                    <div id="line-c2-qc1-h" class="line" style="left: 25%; top: 120px; width: 20px; height: 3px; transform: translateX(-100%);"></div>
+                    <div id="line-c2-qc1-v" class="line" style="left: 25%; top: 75px; width: 3px; height: 45px;"></div>
+
+
+                    <!-- Label Basis, Kolektor, Emitor -->
+                    <div class="component-label" style="left: calc(25% + 15px); top: 150px;">B</div>
+                    <div class="component-label" style="left: 25%; top: 110px; transform: translateX(-50%);">C</div>
+                    <div class="component-label" style="left: 25%; top: 190px; transform: translateX(-50%);">E</div>
+
+                    <div class="component-label" style="right: calc(25% + 15px); top: 150px; transform: translateX(100%);">B</div>
+                    <div class="component-label" style="left: 75%; top: 110px; transform: translateX(-50%);">C</div>
+                    <div class="component-label" style="left: 75%; top: 190px; transform: translateX(-50%);">E</div>
+
+                </div>
+
+                <!-- Area Penjelasan Alur Kerja Dinamis -->
+                <div class="mt-6 p-4 bg-gray-900 rounded-lg border border-indigo-500">
+                    <h3 class="text-lg font-bold text-indigo-400 mb-2">Alur Kerja Saat Ini: <span id="currentStateTitle" class="text-white">SIAP</span></h3>
+                    <p id="workflowExplanation" class="text-sm text-gray-300">
+                        Tekan "Mulai Simulasi" untuk melihat bagaimana kedua transistor dan kapasitor bekerja secara bergantian. Garis yang **berwarna terang** menunjukkan jalur arus yang **aktif**.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Kontrol Simulasi -->
+            <div class="flex flex-col sm:flex-row justify-center mt-8 space-y-4 sm:space-y-0 sm:space-x-4">
+                <button id="audioButton" onclick="initAudio()" class="px-6 py-3 bg-yellow-600 text-white font-bold rounded-full shadow-lg hover:bg-yellow-700 transition duration-300 transform hover:scale-105">
+                    Aktifkan Audio
+                </button>
+                <button id="startButton" onclick="toggleSimulation()" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105">
+                    Mulai Simulasi
+                </button>
+                <button id="stopButton" onclick="resetSimulation()" disabled class="px-6 py-3 bg-gray-400 text-white font-bold rounded-full shadow-lg transition duration-300">
+                    Stop & Reset
+                </button>
             </div>
         </div>
-
-        <!-- Kontrol Simulasi -->
-        <div class="flex flex-col sm:flex-row justify-center mt-8 space-y-4 sm:space-y-0 sm:space-x-4">
-            <button id="startButton" onclick="toggleSimulation()" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105">
-                Mulai Simulasi
-            </button>
-            <button id="stopButton" onclick="resetSimulation()" disabled class="px-6 py-3 bg-gray-400 text-white font-bold rounded-full shadow-lg transition duration-300">
-                Stop & Reset
-            </button>
-        </div>
+        <!-- END SIMULATION VIEW -->
 
         <div class="mt-8 pt-4 border-t text-gray-500 text-xs text-center">
-            Prinsip Kerja: Ketika satu transistor ON, kapasitor yang terhubung ke basisnya mengisi muatan dan memaksa transistor lain OFF. Waktu kedip diatur oleh konstanta waktu $T = 1.38 \times R_{Basis} \times C$.
+            Prinsip Astable Multivibrator. Dibuat dengan Tailwind CSS dan Tone.js.
         </div>
 
     </div>
@@ -211,6 +306,8 @@
         let isRunning = false;
         let currentToggleState = 0; // 0: Q1 ON (LED A OFF, B ON); 1: Q2 ON (LED B OFF, A ON)
         let halfPeriod = 0;
+        let isAudioEnabled = false;
+        let synth = null;
 
         // Elemen UI
         const R_Input = document.getElementById('resistorValue');
@@ -220,12 +317,13 @@
         const halfPeriodDisplay = document.getElementById('halfPeriodDisplay');
         const Q1 = document.getElementById('Q1');
         const Q2 = document.getElementById('Q2');
-        const ledA1 = document.getElementById('led-a1'); // D1
-        const ledA2 = document.getElementById('led-a2'); // D1'
-        const ledB1 = document.getElementById('led-b1'); // D2
-        const ledB2 = document.getElementById('led-b2'); // D2'
+        const ledA1 = document.getElementById('led-a1'); 
+        const ledA2 = document.getElementById('led-a2'); 
+        const ledB1 = document.getElementById('led-b1'); 
+        const ledB2 = document.getElementById('led-b2'); 
         const startButton = document.getElementById('startButton');
         const stopButton = document.getElementById('stopButton');
+        const audioButton = document.getElementById('audioButton');
         const currentStateTitle = document.getElementById('currentStateTitle');
         const workflowExplanation = document.getElementById('workflowExplanation');
 
@@ -241,34 +339,88 @@
             'line-c1-qc2-h', 'line-c1-qc2-v', 'line-c2-qc1-h', 'line-c2-qc1-v'
         ];
         const lines = lineIds.map(id => document.getElementById(id));
+        
+        // --- FUNGSI NAVIGASI TAMPILAN ---
+        function showView(viewId) {
+            document.getElementById('menuView').classList.add('hidden');
+            document.getElementById('explanationView').classList.add('hidden');
+            document.getElementById('simulationView').classList.add('hidden');
+
+            document.getElementById(viewId).classList.remove('hidden');
+
+            // Reset simulasi jika kembali ke menu utama atau pindah dari simulasi
+            if (viewId !== 'simulationView') {
+                resetSimulation();
+            } else {
+                // Pastikan simulasi siap saat beralih ke tampilan simulasi
+                calculateValues();
+                resetSimulation();
+            }
+        }
+
+        // --- FUNGSI AUDIO ---
+        function initAudio() {
+            if (isAudioEnabled) return;
+
+            // Membangun Synth sederhana (perkusi)
+            synth = new Tone.MembraneSynth({
+                pitchDecay: 0.05,
+                octaves: 2,
+                envelope: {
+                    attack: 0.001,
+                    decay: 0.4,
+                    sustain: 0.001,
+                    release: 0.05,
+                },
+            }).toDestination();
+
+            // Mengaktifkan AudioContext
+            Tone.start().then(() => {
+                isAudioEnabled = true;
+                audioButton.textContent = 'Audio: AKTIF';
+                audioButton.classList.remove('bg-yellow-600', 'hover:bg-yellow-700', 'transform', 'hover:scale-105');
+                audioButton.classList.add('bg-green-600');
+                audioButton.disabled = true;
+                console.log("Audio Context diaktifkan.");
+            }).catch(e => {
+                console.error("Gagal memulai Audio Context:", e);
+                currentStateTitle.textContent = 'AUDIO GAGAL';
+                workflowExplanation.innerHTML = '<span class="text-red-400">Audio gagal diaktifkan.</span> Coba refresh atau jalankan di lingkungan browser penuh.';
+            });
+        }
+
+        function playSound() {
+            if (isAudioEnabled && synth) {
+                const freq = Math.min(1000, Math.max(100, 1 / (halfPeriod / 1000) * 150));
+                synth.triggerAttackRelease(freq, "8n");
+            }
+        }
+        // --- AKHIR FUNGSI AUDIO ---
 
 
         /**
          * Mengatur kelas visual garis sirkuit
-         * @param {string} id - ID elemen garis
-         * @param {string} mode - 'CHARGE', 'DISCHARGE', 'LED_ON_GREEN', 'LED_ON_RED', 'OFF'
          */
         function setLineState(id, mode) {
             const line = document.getElementById(id);
             if (!line) return;
 
-            // Reset kelas
             line.classList.remove(activeRedClass, activeGreenClass, inactiveClass);
 
             switch (mode) {
-                case 'CHARGE': // Jalur pengisian/Resistor Basis aktif
+                case 'CHARGE': 
                     line.classList.add(activeGreenClass);
                     break;
-                case 'DISCHARGE': // Jalur pengosongan Kapasitor / Kolektor ON
+                case 'DISCHARGE': 
                     line.classList.add(activeRedClass);
                     break;
-                case 'LED_ON_RED': // Jalur LED Merah ON (Transistor OFF)
+                case 'LED_ON_RED': 
                     line.classList.add(activeRedClass);
                     break;
-                case 'LED_ON_GREEN': // Jalur LED Hijau ON (Transistor OFF)
+                case 'LED_ON_GREEN': 
                     line.classList.add(activeGreenClass);
                     break;
-                case 'OFF': // Jalur mati/tidak dilewati arus
+                case 'OFF': 
                 default:
                     line.classList.add(inactiveClass);
                     break;
@@ -309,6 +461,8 @@
         function updateVisuals() {
             if (!isRunning) return;
 
+            playSound(); 
+            
             // Atur jalur VCC dan GND
             setLineState('line-vcc', 'CHARGE'); 
             setLineState('line-gnd', 'CHARGE'); 
@@ -317,70 +471,53 @@
 
             if (currentToggleState === 0) {
                 // === STATE 1: Q1 ON / Q2 OFF ===
-                
-                // --- KIRI (Q1 ON - Sisi Merah OFF) ---
-                Q1.classList.add('bg-red-800'); // Status ON
-                Q1.textContent = 'Q1 (C945 ON)';
+                Q1.classList.add('bg-red-800'); Q1.textContent = 'Q1 (C945 ON)';
                 ledA1.className = 'w-3 h-3 rounded-full led-off border-2 border-gray-400';
                 ledA2.className = 'w-3 h-3 rounded-full led-off border-2 border-gray-400';
                 
                 setLineState('line-qc2-led', 'OFF'); setLineState('line-q2-c', 'OFF'); setLineState('line-q2-e', 'OFF'); setLineState('line-q2-e-gnd', 'OFF');
                 setLineState('line-qc1-led', 'DISCHARGE'); setLineState('line-q1-c', 'DISCHARGE'); setLineState('line-q1-e', 'DISCHARGE'); setLineState('line-q1-e-gnd', 'DISCHARGE');
 
-                // C2 Charging (Melalui R1)
                 setLineState('line-r1-vcc', 'CHARGE'); setLineState('line-r1-c2', 'CHARGE'); setLineState('line-c2-q1b', 'CHARGE'); setLineState('line-q1b-c2', 'CHARGE');
                 
-                // C1 Discharging (Melalui Q1)
                 setLineState('line-c1-qc2-h', 'DISCHARGE'); setLineState('line-c1-qc2-v', 'DISCHARGE'); setLineState('line-r2-vcc', 'OFF'); setLineState('line-r2-c1', 'OFF');
 
-                // --- KANAN (Q2 OFF - Sisi Hijau ON) ---
-                Q2.classList.remove('bg-red-800'); // Status OFF
-                Q2.textContent = 'Q2 (C945 OFF)';
+                Q2.classList.remove('bg-red-800'); Q2.textContent = 'Q2 (C945 OFF)';
                 ledB1.className = 'w-3 h-3 rounded-full led-green-on border-2 border-gray-400';
                 ledB2.className = 'w-3 h-3 rounded-full led-green-on border-2 border-gray-400';
                 
                 setLineState('line-qc1-vcc', 'LED_ON_GREEN');
                 setLineState('line-qc2-vcc', 'OFF');
 
-                // Update Alur Kerja
-                currentStateTitle.textContent = 'STATE 1: Q1 ON / Q2 OFF';
+                currentStateTitle.textContent = 'KEADAAN 1: Q1 ON / Q2 OFF';
                 explanationText = 'Q1 ON. LED sisi Merah MATI karena arus mengalir ke GND melalui Q1. Q2 OFF. LED sisi Hijau MENYALA. Kapasitor C1 mengosongkan muatan melalui Q1, mempertahankan Q2 OFF.';
                 workflowExplanation.innerHTML = explanationText.replace('Q1 ON', 'Q1 **ON**').replace('LED sisi Merah MATI', 'LED sisi Merah **MATI**').replace('Q2 OFF', 'Q2 **OFF**').replace('LED sisi Hijau MENYALA', 'LED sisi Hijau **MENYALA**').replace('C1 mengosongkan muatan', 'C1 **mengosongkan muatan**');
 
             } else {
                 // === STATE 2: Q2 ON / Q1 OFF ===
-
-                // --- KANAN (Q2 ON - Sisi Hijau OFF) ---
-                Q2.classList.add('bg-red-800'); // Status ON
-                Q2.textContent = 'Q2 (C945 ON)';
+                Q2.classList.add('bg-red-800'); Q2.textContent = 'Q2 (C945 ON)';
                 ledB1.className = 'w-3 h-3 rounded-full led-off border-2 border-gray-400';
                 ledB2.className = 'w-3 h-3 rounded-full led-off border-2 border-gray-400';
 
                 setLineState('line-qc1-led', 'OFF'); setLineState('line-q1-c', 'OFF'); setLineState('line-q1-e', 'OFF'); setLineState('line-q1-e-gnd', 'OFF');
                 setLineState('line-qc2-led', 'DISCHARGE'); setLineState('line-q2-c', 'DISCHARGE'); setLineState('line-q2-e', 'DISCHARGE'); setLineState('line-q2-e-gnd', 'DISCHARGE');
 
-                // C1 Charging (Melalui R2)
                 setLineState('line-r2-vcc', 'CHARGE'); setLineState('line-r2-c1', 'CHARGE'); setLineState('line-c1-q2b', 'CHARGE'); setLineState('line-q2b-c1', 'CHARGE');
 
-                // C2 Discharging (Melalui Q2)
                 setLineState('line-c2-qc1-h', 'DISCHARGE'); setLineState('line-c2-qc1-v', 'DISCHARGE'); setLineState('line-r1-vcc', 'OFF'); setLineState('line-r1-c2', 'OFF');
                 
-                // --- KIRI (Q1 OFF - Sisi Merah ON) ---
-                Q1.classList.remove('bg-red-800'); // Status OFF
-                Q1.textContent = 'Q1 (C945 OFF)';
+                Q1.classList.remove('bg-red-800'); Q1.textContent = 'Q1 (C945 OFF)';
                 ledA1.className = 'w-3 h-3 rounded-full led-red-on border-2 border-gray-400';
                 ledA2.className = 'w-3 h-3 rounded-full led-red-on border-2 border-gray-400';
 
                 setLineState('line-qc2-vcc', 'LED_ON_RED');
                 setLineState('line-qc1-vcc', 'OFF');
 
-                // Update Alur Kerja
-                currentStateTitle.textContent = 'STATE 2: Q2 ON / Q1 OFF';
+                currentStateTitle.textContent = 'KEADAAN 2: Q2 ON / Q1 OFF';
                 explanationText = 'Q2 ON. LED sisi Hijau MATI karena arus mengalir ke GND melalui Q2. Q1 OFF. LED sisi Merah MENYALA. Kapasitor C2 mengosongkan muatan melalui Q2, mempertahankan Q1 OFF.';
                 workflowExplanation.innerHTML = explanationText.replace('Q2 ON', 'Q2 **ON**').replace('LED sisi Hijau MATI', 'LED sisi Hijau **MATI**').replace('Q1 OFF', 'Q1 **OFF**').replace('LED sisi Merah MENYALA', 'LED sisi Merah **MENYALA**').replace('C2 mengosongkan muatan', 'C2 **mengosongkan muatan**');
             }
 
-            // Toggle state untuk siklus berikutnya
             currentToggleState = 1 - currentToggleState;
         }
 
@@ -396,7 +533,6 @@
             isRunning = false;
             currentToggleState = 0;
 
-            // Reset visual Transistor dan LED
             Q1.classList.remove('bg-red-800'); Q1.textContent = 'Q1 (C945)';
             Q2.classList.remove('bg-red-800'); Q2.textContent = 'Q2 (C945)';
             ledA1.className = 'w-3 h-3 rounded-full led-off border-2 border-gray-400';
@@ -404,7 +540,6 @@
             ledB1.className = 'w-3 h-3 rounded-full led-off border-2 border-gray-400';
             ledB2.className = 'w-3 h-3 rounded-full led-off border-2 border-gray-400';
 
-            // Reset semua garis
             lines.forEach(line => {
                 line.classList.remove(activeRedClass, activeGreenClass);
                 line.classList.add(inactiveClass);
@@ -412,8 +547,6 @@
             document.getElementById('line-vcc').classList.remove(inactiveClass);
             document.getElementById('line-gnd').classList.remove(inactiveClass);
 
-
-            // Update buttons
             startButton.textContent = 'Mulai Simulasi';
             startButton.classList.remove('bg-red-600', 'bg-yellow-600');
             startButton.classList.add('bg-indigo-600');
@@ -422,7 +555,6 @@
             stopButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'transform', 'hover:scale-105');
             stopButton.classList.add('bg-gray-400');
 
-            // Reset Alur Kerja
             currentStateTitle.textContent = 'SIAP';
             workflowExplanation.innerHTML = 'Tekan "Mulai Simulasi" untuk melihat bagaimana kedua transistor dan kapasitor bekerja secara bergantian. Garis yang **berwarna terang** menunjukkan jalur arus yang **aktif**.';
         }
@@ -436,12 +568,11 @@
             }
 
             if (halfPeriod > 0) {
-                currentToggleState = 1; // Mulai dengan state 2 (Q2 ON)
+                currentToggleState = 1; 
                 updateVisuals();
                 simulationInterval = setInterval(updateVisuals, halfPeriod);
                 isRunning = true;
 
-                // Update buttons
                 startButton.textContent = 'Jeda Simulasi';
                 startButton.classList.remove('bg-indigo-600', 'bg-yellow-600');
                 startButton.classList.add('bg-red-600');
@@ -488,14 +619,14 @@
             } else if (!isValid) {
                 resetSimulation();
             } else if (!isRunning && isValid) {
-                resetSimulation();
+                // Jangan mulai, hanya perbarui kalkulasi jika ada di simulationView
+                calculateValues(); 
             }
         }
 
-        // Panggil saat halaman dimuat untuk menampilkan nilai dan status awal.
+        // Panggil saat halaman dimuat untuk menampilkan menu
         window.onload = function() {
-            calculateValues();
-            resetSimulation();
+            showView('menuView');
         };
 
     </script>
