@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Astable Multivibrator</title>
+    <!-- Memuat Tailwind CSS untuk styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Konfigurasi Font Inter -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .led-off { background-color: #374151; box-shadow: 0 0 5px #1f2937; }
+        .led-red-on { background-color: #ef4444; box-shadow: 0 0 15px #f87171, 0 0 30px #ef4444; transition: box-shadow 0.1s ease; }
+        .led-green-on { background-color: #10b981; box-shadow: 0 0 15px #6ee7b7, 0 0 30px #10b981; transition: box-shadow 0.1s ease; }
+        .animated-dot { animation: pulse-glow 1.5s infinite alternate; }
+        @keyframes pulse-glow { 0% { opacity: 0.6; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+
+    <div class="w-full max-w-4xl bg-white rounded-xl shadow-2xl p-6 md:p-10 border-t-4 border-indigo-600">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-4 text-center">
+            Simulasi Astable Multivibrator <br class="md:hidden"> (Lampu Kedip)
+        </h1>
+        <p class="text-center text-gray-600 mb-8">
+            Ubah nilai Resistor (R) dan Kapasitor (C) untuk mengatur kecepatan kedipan.
+        </p>
+
+        <!-- Area Input Kontrol -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 p-4 bg-indigo-50 rounded-lg">
+            <div>
+                <label for="resistorValue" class="block text-sm font-medium text-gray-700 mb-1">Resistor Basis (R1 & R2, kΩ):</label>
+                <input type="number" id="resistorValue" value="47" min="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition duration-150" onchange="updateSimulation()" onkeyup="updateSimulation()">
+            </div>
+            <div>
+                <label for="capacitorValue" class="block text-sm font-medium text-gray-700 mb-1">Kapasitor (C1 & C2, µF):</label>
+                <input type="number" id="capacitorValue" value="100" min="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition duration-150" onchange="updateSimulation()" onkeyup="updateSimulation()">
+            </div>
+            <!-- Nilai Resistor Kolektor (Tetap untuk simulasi ini) -->
+            <div class="md:col-span-2 text-sm text-gray-500 mt-2">
+                *Resistor Kolektor (Rc1 & Rc2) diasumsikan 1 kΩ (tetap).
+            </div>
+        </div>
+
+        <!-- Area Output dan Hasil Perhitungan -->
+        <div class="bg-white border border-gray-200 rounded-xl p-6 mb-8 shadow-inner">
+            <h2 class="text-xl font-semibold text-gray-800 mb-3 border-b pb-2">Hasil Perhitungan</h2>
+            <div class="flex flex-col sm:flex-row justify-around space-y-4 sm:space-y-0 sm:space-x-4 text-center">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Periode Total (T)</p>
+                    <p id="periodDisplay" class="text-2xl font-bold text-indigo-600">0.00 s</p>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Frekuensi (f)</p>
+                    <p id="frequencyDisplay" class="text-2xl font-bold text-indigo-600">0.00 Hz</p>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Waktu Kedip Tunggal (T/2)</p>
+                    <p id="halfPeriodDisplay" class="text-2xl font-bold text-indigo-600">0.00 s</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Area Visualisasi Sirkuit Sederhana -->
+        <div class="flex justify-around items-center space-x-4 p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-xl">
+
+            <!-- LED 1 & Q2 (Sisi Kiri) -->
+            <div class="flex flex-col items-center">
+                <div id="led1" class="w-12 h-12 rounded-full led-off border-2 border-gray-600 mb-4 transition-all duration-300"></div>
+                <p class="text-sm text-gray-300">LED 1 (Merah)</p>
+                <div class="mt-4 text-center">
+                    <span id="q2State" class="text-xs font-semibold text-gray-400 p-1 rounded-full bg-gray-700">Q2 (OFF)</span>
+                </div>
+            </div>
+
+            <!-- Visualisasi Aliran -->
+            <div class="flex-grow flex justify-center items-center relative h-16">
+                <div class="absolute w-1 h-full bg-gray-500 rounded"></div>
+                <!-- Indikator Kapasitor -->
+                <div class="flex space-x-12">
+                    <div id="cap1" class="w-3 h-3 rounded-full bg-gray-500 animated-dot"></div>
+                    <div id="cap2" class="w-3 h-3 rounded-full bg-gray-500 animated-dot"></div>
+                </div>
+            </div>
+
+            <!-- LED 2 & Q1 (Sisi Kanan) -->
+            <div class="flex flex-col items-center">
+                <div id="led2" class="w-12 h-12 rounded-full led-off border-2 border-gray-600 mb-4 transition-all duration-300"></div>
+                <p class="text-sm text-gray-300">LED 2 (Hijau)</p>
+                <div class="mt-4 text-center">
+                    <span id="q1State" class="text-xs font-semibold text-gray-400 p-1 rounded-full bg-gray-700">Q1 (OFF)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kontrol Simulasi -->
+        <div class="flex justify-center mt-8 space-x-4">
+            <button id="startButton" onclick="toggleSimulation()" class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-full shadow-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105">
+                Mulai Simulasi
+            </button>
+            <button id="stopButton" onclick="resetSimulation()" disabled class="px-6 py-3 bg-gray-400 text-white font-bold rounded-full shadow-lg transition duration-300">
+                Stop & Reset
+            </button>
+        </div>
+
+        <!-- Catatan Kaki -->
+        <div class="mt-8 pt-4 border-t text-gray-500 text-xs text-center">
+            Prinsip Kerja: Ketika satu transistor ON, kapasitor yang terhubung ke basisnya mengisi muatan dan memaksa transistor lain OFF. Waktu kedip diatur oleh konstanta waktu $T = 1.38 \times R_{Basis} \times C$.
+        </div>
+
+    </div>
+
+    <script>
+        // Variabel Global
+        const R_C_FIXED = 1000; // Resistor Kolektor (Rc1, Rc2) dalam Ohm. Diasumsikan 1kΩ.
+        let simulationInterval = null;
+        let isRunning = false; // Status: true jika interval berjalan, false jika dihentikan/dijeda
+        let currentToggleState = 0; // 0: Q1 ON / LED2 ON; 1: Q2 ON / LED1 ON
+        let halfPeriod = 0; // Waktu kedip tunggal dalam milidetik
+
+        // Elemen UI
+        const R_Input = document.getElementById('resistorValue');
+        const C_Input = document.getElementById('capacitorValue');
+        const periodDisplay = document.getElementById('periodDisplay');
+        const frequencyDisplay = document.getElementById('frequencyDisplay');
+        const halfPeriodDisplay = document.getElementById('halfPeriodDisplay');
+        const led1 = document.getElementById('led1');
+        const led2 = document.getElementById('led2');
+        const q1State = document.getElementById('q1State');
+        const q2State = document.getElementById('q2State');
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const cap1 = document.getElementById('cap1');
+        const cap2 = document.getElementById('cap2');
+
+        /**
+         * Mengkonversi R (kOhm) dan C (uF) ke nilai dasar (Ohm dan Farad).
+         * Menghitung periode (T) dan frekuensi (f) simulasi.
+         */
+        function calculateValues() {
+            const R_BASE = parseFloat(R_Input.value) * 1000; // Resistor Basis (Ohm)
+            const CAP = parseFloat(C_Input.value) / 1000000; // Kapasitor (Farad)
+
+            if (isNaN(R_BASE) || isNaN(CAP) || R_BASE <= 0 || CAP <= 0) {
+                // Nilai default jika input tidak valid
+                halfPeriod = 0;
+                periodDisplay.textContent = "N/A";
+                frequencyDisplay.textContent = "N/A";
+                halfPeriodDisplay.textContent = "N/A";
+                return false;
+            }
+
+            // Rumus untuk rangkaian simetris: T ≈ 2 * ln(2) * R_BASE * CAP
+            // ln(2) ≈ 0.693. Jadi, 2 * 0.693 = 1.386 (dibulatkan menjadi 1.38)
+            const T = 1.386 * R_BASE * CAP; // Periode Total (detik)
+            const f = 1 / T; // Frekuensi (Hz)
+
+            halfPeriod = (T / 2) * 1000; // Waktu kedip tunggal (milidetik)
+
+            // Update UI hasil perhitungan
+            periodDisplay.textContent = `${T.toFixed(3)} s`;
+            frequencyDisplay.textContent = `${f.toFixed(2)} Hz`;
+            halfPeriodDisplay.textContent = `${(T / 2).toFixed(3)} s`;
+
+            return true;
+        }
+
+        /**
+         * Memperbarui visual LED dan status Transistor
+         */
+        function updateVisuals() {
+            if (!isRunning) return;
+
+            if (currentToggleState === 0) {
+                // STATE 0: Q1 ON, LED2 ON (Green), Q2 OFF, LED1 OFF
+                led1.className = 'w-12 h-12 rounded-full led-off border-2 border-gray-600 mb-4 transition-all duration-300';
+                led2.className = 'w-12 h-12 rounded-full led-green-on border-2 border-gray-900 mb-4 transition-all duration-300';
+
+                q1State.textContent = 'Q1 (SATURATED)';
+                q1State.classList.remove('bg-gray-700', 'text-gray-400', 'bg-red-600');
+                q1State.classList.add('bg-green-600', 'text-white');
+
+                q2State.textContent = 'Q2 (CUTOFF)';
+                q2State.classList.remove('bg-green-600', 'text-white', 'bg-red-600');
+                q2State.classList.add('bg-gray-700', 'text-gray-400');
+
+                // Visual Kapasitor: C1 Discharging (mengisi basis Q2) / C2 Charging (mengisi basis Q1)
+                cap1.classList.remove('bg-green-400', 'bg-gray-500');
+                cap1.classList.add('bg-red-400'); // Merah: Discharging/Memaksa OFF
+                cap2.classList.remove('bg-red-400', 'bg-gray-500');
+                cap2.classList.add('bg-green-400'); // Hijau: Charging/Membiarkan ON
+
+
+            } else {
+                // STATE 1: Q2 ON, LED1 ON (Red), Q1 OFF, LED2 OFF
+                led1.className = 'w-12 h-12 rounded-full led-red-on border-2 border-gray-900 mb-4 transition-all duration-300';
+                led2.className = 'w-12 h-12 rounded-full led-off border-2 border-gray-600 mb-4 transition-all duration-300';
+
+                q2State.textContent = 'Q2 (SATURATED)';
+                q2State.classList.remove('bg-gray-700', 'text-gray-400', 'bg-green-600');
+                q2State.classList.add('bg-red-600', 'text-white');
+
+                q1State.textContent = 'Q1 (CUTOFF)';
+                q1State.classList.remove('bg-red-600', 'text-white', 'bg-green-600');
+                q1State.classList.add('bg-gray-700', 'text-gray-400');
+
+                // Visual Kapasitor: C1 Charging / C2 Discharging
+                cap1.classList.remove('bg-red-400', 'bg-gray-500');
+                cap1.classList.add('bg-green-400'); // Hijau: Charging/Membiarkan ON
+                cap2.classList.remove('bg-green-400', 'bg-gray-500');
+                cap2.classList.add('bg-red-400'); // Merah: Discharging/Memaksa OFF
+            }
+
+            // Toggle state untuk siklus berikutnya
+            currentToggleState = 1 - currentToggleState;
+        }
+
+        /**
+         * Menghentikan simulasi total dan mereset UI ke kondisi awal.
+         */
+        function resetSimulation() {
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+                simulationInterval = null;
+            }
+
+            isRunning = false;
+            currentToggleState = 0;
+
+            // Reset visual
+            led1.className = 'w-12 h-12 rounded-full led-off border-2 border-gray-600 mb-4 transition-all duration-300';
+            led2.className = 'w-12 h-12 rounded-full led-off border-2 border-gray-600 mb-4 transition-all duration-300';
+
+            q1State.textContent = 'Q1 (OFF)';
+            q2State.textContent = 'Q2 (OFF)';
+            q1State.classList.remove('bg-green-600', 'bg-red-600', 'text-white');
+            q1State.classList.add('bg-gray-700', 'text-gray-400');
+            q2State.classList.remove('bg-green-600', 'bg-red-600', 'text-white');
+            q2State.classList.add('bg-gray-700', 'text-gray-400');
+
+            cap1.classList.remove('bg-green-400', 'bg-red-400');
+            cap2.classList.remove('bg-green-400', 'bg-red-400');
+            cap1.classList.add('bg-gray-500');
+            cap2.classList.add('bg-gray-500');
+            
+            // Update buttons
+            startButton.textContent = 'Mulai Simulasi';
+            startButton.classList.remove('bg-red-600');
+            startButton.classList.add('bg-indigo-600');
+
+            stopButton.disabled = true;
+            stopButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'transform', 'hover:scale-105');
+            stopButton.classList.add('bg-gray-400');
+        }
+
+        /**
+         * Memulai interval kedipan baru atau melanjutkan simulasi.
+         */
+        function startSimulation() {
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+            }
+
+            if (halfPeriod > 0) {
+                // Start running
+                currentToggleState = 1; // Mulai dengan state 1 (LED1 ON) agar terlihat efek kedipan pertama
+                updateVisuals();
+                simulationInterval = setInterval(updateVisuals, halfPeriod);
+                isRunning = true;
+
+                // Update buttons
+                startButton.textContent = 'Jeda Simulasi';
+                startButton.classList.remove('bg-indigo-600');
+                startButton.classList.add('bg-red-600');
+                
+                stopButton.disabled = false;
+                stopButton.classList.remove('bg-gray-400');
+                stopButton.classList.add('bg-red-600', 'hover:bg-red-700', 'transform', 'hover:scale-105');
+
+            } else {
+                // Jika periodenya 0 atau invalid
+                resetSimulation();
+            }
+        }
+
+        /**
+         * Mengganti status simulasi (Mulai/Jeda).
+         */
+        function toggleSimulation() {
+            if (!calculateValues()) {
+                // Jika input tidak valid, tidak bisa memulai simulasi
+                return;
+            }
+            
+            if (isRunning) {
+                // Pause
+                clearInterval(simulationInterval);
+                simulationInterval = null;
+                isRunning = false;
+                startButton.textContent = 'Lanjutkan Simulasi';
+                startButton.classList.remove('bg-red-600');
+                startButton.classList.add('bg-indigo-600');
+                
+            } else {
+                // Start or Resume
+                startSimulation();
+            }
+        }
+
+        /**
+         * Fungsi utama yang dipanggil saat input berubah.
+         * Menghitung ulang dan memulai ulang simulasi jika sedang berjalan, atau mereset jika tidak valid.
+         */
+        function updateSimulation() {
+            const isValid = calculateValues();
+            if (isRunning && isValid) {
+                // Hanya restart interval jika sedang berjalan (perubahan kecepatan)
+                startSimulation();
+            } else if (!isValid) {
+                // Jika input menjadi tidak valid, stop/reset
+                resetSimulation();
+            } else if (!isRunning && isValid) {
+                 // Jika input valid tetapi simulasi belum berjalan (hanya perubahan nilai)
+                 // Tetap reset untuk memperbarui visual OFF dengan nilai yang baru dihitung
+                resetSimulation();
+            }
+        }
+
+        // Panggil saat halaman dimuat untuk menampilkan nilai dan status awal.
+        window.onload = function() {
+            calculateValues();
+            resetSimulation(); // Reset ke keadaan awal
+        };
+
+    </script>
+</body>
+</html>
