@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Astable Multivibrator</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .simulation-area {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .circuit-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            position: relative;
+            min-height: 500px;
+        }
+
+        .breadboard {
+            width: 100%;
+            height: 400px;
+            background: #2c5530;
+            border-radius: 10px;
+            position: relative;
+            border: 3px solid #1a3d1f;
+            overflow: hidden;
+        }
+
+        .breadboard::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 8px,
+                rgba(255,255,255,0.1) 8px,
+                rgba(255,255,255,0.1) 10px
+            );
+            border-radius: 5px;
+        }
+
+        .component {
+            position: absolute;
+            transition: all 0.3s ease;
+        }
+
+        .transistor {
+            width: 30px;
+            height: 40px;
+            background: #2c3e50;
+            border-radius: 5px;
+            border: 2px solid #34495e;
+        }
+
+        .transistor.q1 {
+            top: 150px;
+            left: 100px;
+        }
+
+        .transistor.q2 {
+            top: 150px;
+            left: 300px;
+        }
+
+        .transistor.active {
+            background: #2ecc71;
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.6);
+            border-color: #27ae60;
+        }
+
+        .capacitor {
+            width: 20px;
+            height: 30px;
+            background: #f39c12;
+            border-radius: 3px;
+            border: 1px solid #d68910;
+        }
+
+        .capacitor.c1 {
+            top: 100px;
+            left: 180px;
+        }
+
+        .capacitor.c2 {
+            top: 100px;
+            left: 220px;
+        }
+
+        .capacitor.charging {
+            background: #2ecc71;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.6);
+            border-color: #27ae60;
+        }
+
+        .resistor {
+            width: 40px;
+            height: 8px;
+            background: #95a5a6;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .resistor::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 5px;
+            right: 5px;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                #e74c3c 0px,
+                #e74c3c 3px,
+                #f1c40f 3px,
+                #f1c40f 6px,
+                #2ecc71 6px,
+                #2ecc71 9px,
+                #3498db 9px,
+                #3498db 12px
+            );
+            border-radius: 2px;
+        }
+
+        .resistor.r1 {
+            top: 80px;
+            left: 80px;
+        }
+
+        .resistor.r2 {
+            top: 80px;
+            left: 280px;
+        }
+
+        .resistor.r3 {
+            top: 250px;
+            left: 80px;
+        }
+
+        .resistor.r4 {
+            top: 250px;
+            left: 280px;
+        }
+
+        .led {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 2px solid #34495e;
+            background: #ecf0f1;
+        }
+
+        .led.led1 {
+            top: 50px;
+            left: 90px;
+        }
+
+        .led.led2 {
+            top: 50px;
+            left: 130px;
+        }
+
+        .led.led3 {
+            top: 50px;
+            left: 290px;
+        }
+
+        .led.led4 {
+            top: 50px;
+            left: 330px;
+        }
+
+        .led.on {
+            box-shadow: 0 0 20px currentColor;
+            border-color: currentColor;
+        }
+
+        .led.red.on {
+            background: #e74c3c;
+            color: #e74c3c;
+        }
+
+        .led.green.on {
+            background: #2ecc71;
+            color: #2ecc71;
+        }
+
+        .led.blue.on {
+            background: #3498db;
+            color: #3498db;
+        }
+
+        .led.orange.on {
+            background: #f39c12;
+            color: #f39c12;
+        }
+
+        .wire {
+            position: absolute;
+            background: #3498db;
+            z-index: 1;
+        }
+
+        .wire.horizontal {
+            height: 2px;
+        }
+
+        .wire.vertical {
+            width: 2px;
+        }
+
+        .wire.active {
+            background: #e74c3c;
+            box-shadow: 0 0 5px rgba(231, 76, 60, 0.6);
+        }
+
+        .controls {
+            background: #ecf0f1;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .btn-start {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-start:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        .btn-stop {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-stop:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .btn-reset {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #d68910;
+            transform: translateY(-2px);
+        }
+
+        .slider-group {
+            margin-bottom: 15px;
+        }
+
+        .slider-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #bdc3c7;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+        }
+
+        .value-display {
+            text-align: center;
+            margin-top: 5px;
+            padding: 5px 10px;
+            background: #3498db;
+            color: white;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .status {
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .status h4 {
+            margin: 0 0 10px 0;
+            color: #ecf0f1;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .info-panel {
+            background: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin-top: 20px;
+        }
+
+        .info-panel h3 {
+            color: #2980b9;
+            margin-bottom: 15px;
+        }
+
+        .info-panel ul {
+            color: #34495e;
+            line-height: 1.6;
+        }
+
+        .component-label {
+            position: absolute;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        @media (max-width: 768px) {
+            .simulation-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .circuit-container {
+                min-height: 400px;
+            }
+            
+            .breadboard {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🔌 Simulasi Astable Multivibrator</h1>
+            <p>Pelajari cara kerja rangkaian astable multivibrator dengan 2 transistor NPN yang membuat LED berkedip bergantian</p>
+        </header>
+
+        <div class="simulation-area">
+            <div class="circuit-container">
+                <div class="breadboard" id="breadboard">
+                    <!-- Transistors -->
+                    <div class="component transistor q1" id="q1">
+                        <div class="component-label" style="top: -25px; left: -5px;">Q1</div>
+                    </div>
+                    <div class="component transistor q2" id="q2">
+                        <div class="component-label" style="top: -25px; left: -5px;">Q2</div>
+                    </div>
+
+                    <!-- Capacitors -->
+                    <div class="component capacitor c1" id="c1">
+                        <div class="component-label" style="top: -25px; left: -5px;">C1</div>
+                    </div>
+                    <div class="component capacitor c2" id="c2">
+                        <div class="component-label" style="top: -25px; left: -5px;">C2</div>
+                    </div>
+
+                    <!-- Resistors -->
+                    <div class="component resistor r1">
+                        <div class="component-label" style="top: -25px; left: 5px;">R1</div>
+                    </div>
+                    <div class="component resistor r2">
+                        <div class="component-label" style="top: -25px; left: 5px;">R2</div>
+                    </div>
+                    <div class="component resistor r3">
+                        <div class="component-label" style="top: 25px; left: 5px;">R3</div>
+                    </div>
+                    <div class="component resistor r4">
+                        <div class="component-label" style="top: 25px; left: 5px;">R4</div>
+                    </div>
+
+                    <!-- LEDs -->
+                    <div class="component led led1 red" id="led1">
+                        <div class="component-label" style="top: -25px; left: -10px;">LED1</div>
+                    </div>
+                    <div class="component led led2 green" id="led2">
+                        <div class="component-label" style="top: -25px; left: -15px;">LED2</div>
+                    </div>
+                    <div class="component led led3 blue" id="led3">
+                        <div class="component-label" style="top: -25px; left: -15px;">LED3</div>
+                    </div>
+                    <div class="component led led4 orange" id="led4">
+                        <div class="component-label" style="top: -25px; left: -15px;">LED4</div>
+                    </div>
+
+                    <!-- Wires -->
+                    <div class="wire horizontal" style="top: 60px; left: 90px; width: 60px;"></div>
+                    <div class="wire horizontal" style="top: 60px; left: 290px; width: 60px;"></div>
+                    <div class="wire vertical" style="top: 100px; left: 115px; height: 50px;"></div>
+                    <div class="wire vertical" style="top: 100px; left: 315px; height: 50px;"></div>
+                    <div class="wire horizontal" style="top: 65px; left: 105px; width: 20px;"></div>
+                    <div class="wire horizontal" style="top: 65px; left: 305px; width: 20px;"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="status">
+                    <h4>📊 Status Simulasi</h4>
+                    <div class="status-item">
+                        <span>Status:</span>
+                        <span id="simStatus">Siap</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Transistor Aktif:</span>
+                        <span id="activeTransistor">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Frekuensi:</span>
+                        <span id="frequency">0.72 Hz</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Periode:</span>
+                        <span id="period">1.39 s</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>🎮 Kontrol Simulasi</h3>
+                    <button class="btn btn-start" id="startBtn">▶️ Mulai Simulasi</button>
+                    <button class="btn btn-stop" id="stopBtn">⏹️ Stop Simulasi</button>
+                    <button class="btn btn-reset" id="resetBtn">🔄 Reset</button>
+                </div>
+
+                <div class="control-group">
+                    <h3>⚙️ Pengaturan Komponen</h3>
+                    <div class="slider-group">
+                        <label for="r1Slider">Resistor R1 (1kΩ - 1MΩ)</label>
+                        <input type="range" id="r1Slider" class="slider" min="1000" max="1000000" step="1000" value="10000">
+                        <div class="value-display" id="r1Value">10kΩ</div>
+                    </div>
+                    <div class="slider-group">
+                        <label for="r2Slider">Resistor R2 (1kΩ - 1MΩ)</label>
+                        <input type="range" id="r2Slider" class="slider" min="1000" max="1000000" step="1000" value="10000">
+                        <div class="value-display" id="r2Value">10kΩ</div>
+                    </div>
+                    <div class="slider-group">
+                        <label for="capSlider">Kapasitor C1 & C2 (1µF - 100µF)</label>
+                        <input type="range" id="capSlider" class="slider" min="1" max="100" step="1" value="10">
+                        <div class="value-display" id="capValue">10µF</div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>🎨 Warna LED</h3>
+                    <button class="btn" id="colorBtn" style="background: #9b59b6; color: white;">🌈 Ganti Warna</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>💡 Cara Kerja Astable Multivibrator</h3>
+            <ul>
+                <li><strong>Prinsip Kerja:</strong> Dua transistor saling mengunci dan melepaskan secara bergantian</li>
+                <li><strong>Rumus Frekuensi:</strong> f = 1 / (0.693 × (R1 + R2) × C), dimana R1 dan R2 adalah resistor timing</li>
+                <li><strong>R1 & R2:</strong> Resistor timing yang menentukan kecepatan kedip (1kΩ - 1MΩ)</li>
+                <li><strong>Nilai Besar:</strong> Semakin besar nilai resistor = semakin lambat kedip LED</li>
+                <li><strong>C1 & C2:</strong> Kapasitor timing (semakin besar = semakin lambat)</li>
+                <li><strong>Keunggulan:</strong> Murah, mudah dirakit, dapat dimodifikasi dengan mudah</li>
+                <li><strong>Aplikasi:</strong> LED flasher, buzzer, clock generator sederhana</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        class AstableMultivibratorSimulator {
+            constructor() {
+                this.isRunning = false;
+                this.currentState = 0; // 0 = Q1 active, 1 = Q2 active
+                this.animationId = null;
+                this.frequency = 0.72;
+                this.colorIndex = 0;
+                this.colors = [
+                    ['red', 'green', 'blue', 'orange'],
+                    ['purple', 'yellow', 'cyan', 'pink'],
+                    ['blue', 'red', 'green', 'yellow'],
+                    ['orange', 'purple', 'pink', 'cyan']
+                ];
+                
+                // Component values
+                this.r1 = 10000; // 10kΩ
+                this.r2 = 10000; // 10kΩ
+                this.capacitor = 10; // 10µF
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.calculateFrequency();
+                this.updateDisplay();
+            }
+
+            initializeElements() {
+                this.elements = {
+                    q1: document.getElementById('q1'),
+                    q2: document.getElementById('q2'),
+                    c1: document.getElementById('c1'),
+                    c2: document.getElementById('c2'),
+                    led1: document.getElementById('led1'),
+                    led2: document.getElementById('led2'),
+                    led3: document.getElementById('led3'),
+                    led4: document.getElementById('led4'),
+                    startBtn: document.getElementById('startBtn'),
+                    stopBtn: document.getElementById('stopBtn'),
+                    resetBtn: document.getElementById('resetBtn'),
+                    r1Slider: document.getElementById('r1Slider'),
+                    r2Slider: document.getElementById('r2Slider'),
+                    capSlider: document.getElementById('capSlider'),
+                    r1Value: document.getElementById('r1Value'),
+                    r2Value: document.getElementById('r2Value'),
+                    capValue: document.getElementById('capValue'),
+                    colorBtn: document.getElementById('colorBtn'),
+                    simStatus: document.getElementById('simStatus'),
+                    activeTransistor: document.getElementById('activeTransistor'),
+                    frequency: document.getElementById('frequency'),
+                    period: document.getElementById('period')
+                };
+            }
+
+            bindEvents() {
+                this.elements.startBtn.addEventListener('click', () => this.startSimulation());
+                this.elements.stopBtn.addEventListener('click', () => this.stopSimulation());
+                this.elements.resetBtn.addEventListener('click', () => this.resetSimulation());
+                this.elements.r1Slider.addEventListener('input', (e) => this.updateR1(e.target.value));
+                this.elements.r2Slider.addEventListener('input', (e) => this.updateR2(e.target.value));
+                this.elements.capSlider.addEventListener('input', (e) => this.updateCapacitor(e.target.value));
+                this.elements.colorBtn.addEventListener('click', () => this.changeColors());
+            }
+
+            startSimulation() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.elements.simStatus.textContent = 'Berjalan';
+                this.animate();
+            }
+
+            stopSimulation() {
+                this.isRunning = false;
+                this.elements.simStatus.textContent = 'Berhenti';
+                if (this.animationId) {
+                    clearTimeout(this.animationId);
+                }
+            }
+
+            resetSimulation() {
+                this.stopSimulation();
+                this.currentState = 0;
+                this.elements.simStatus.textContent = 'Siap';
+                this.elements.activeTransistor.textContent = '-';
+                this.clearAllStates();
+            }
+
+            animate() {
+                if (!this.isRunning) return;
+
+                this.updateCircuitState();
+                
+                const period = 1000 / this.frequency;
+                this.animationId = setTimeout(() => {
+                    this.currentState = 1 - this.currentState; // Toggle between 0 and 1
+                    this.animate();
+                }, period / 2);
+            }
+
+            updateCircuitState() {
+                this.clearAllStates();
+
+                if (this.currentState === 0) {
+                    // Q1 active, LED3 & LED4 on (sisi kanan)
+                    this.elements.q1.classList.add('active');
+                    this.elements.led3.classList.add('on');
+                    this.elements.led4.classList.add('on');
+                    this.elements.c2.classList.add('charging');
+                    this.elements.activeTransistor.textContent = 'Q1 (LED3 & LED4 Nyala)';
+                } else {
+                    // Q2 active, LED1 & LED2 on (sisi kiri)
+                    this.elements.q2.classList.add('active');
+                    this.elements.led1.classList.add('on');
+                    this.elements.led2.classList.add('on');
+                    this.elements.c1.classList.add('charging');
+                    this.elements.activeTransistor.textContent = 'Q2 (LED1 & LED2 Nyala)';
+                }
+            }
+
+            clearAllStates() {
+                this.elements.q1.classList.remove('active');
+                this.elements.q2.classList.remove('active');
+                this.elements.led1.classList.remove('on');
+                this.elements.led2.classList.remove('on');
+                this.elements.led3.classList.remove('on');
+                this.elements.led4.classList.remove('on');
+                this.elements.c1.classList.remove('charging');
+                this.elements.c2.classList.remove('charging');
+            }
+
+            calculateFrequency() {
+                // Formula untuk astable multivibrator: f = 1 / (0.693 * (R1 + R2) * C)
+                // Dimana R1 dan R2 adalah resistor timing dan C adalah kapasitor
+                const R_total = this.r1 + this.r2; // dalam ohm
+                const C = this.capacitor * 1e-6; // konversi µF ke F
+                this.frequency = 1 / (0.693 * R_total * C);
+                
+                // Batasi frekuensi untuk visualisasi yang baik
+                if (this.frequency > 10) this.frequency = 10;
+                if (this.frequency < 0.01) this.frequency = 0.01;
+            }
+
+            updateR1(value) {
+                this.r1 = parseInt(value);
+                this.elements.r1Value.textContent = this.formatResistorValue(this.r1);
+                this.calculateFrequency();
+                this.updateDisplay();
+            }
+
+            updateR2(value) {
+                this.r2 = parseInt(value);
+                this.elements.r2Value.textContent = this.formatResistorValue(this.r2);
+                this.calculateFrequency();
+                this.updateDisplay();
+            }
+
+            updateCapacitor(value) {
+                this.capacitor = parseInt(value);
+                this.elements.capValue.textContent = `${this.capacitor}µF`;
+                this.calculateFrequency();
+                this.updateDisplay();
+            }
+
+            formatResistorValue(value) {
+                if (value >= 1000000) {
+                    return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1)}MΩ`;
+                } else if (value >= 1000) {
+                    return `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}kΩ`;
+                }
+                return `${value}Ω`;
+            }
+
+            changeColors() {
+                this.colorIndex = (this.colorIndex + 1) % this.colors.length;
+                const [color1, color2, color3, color4] = this.colors[this.colorIndex];
+                
+                this.elements.led1.className = `component led led1 ${color1}`;
+                this.elements.led2.className = `component led led2 ${color2}`;
+                this.elements.led3.className = `component led led3 ${color3}`;
+                this.elements.led4.className = `component led led4 ${color4}`;
+                
+                // Update CSS for new colors
+                this.updateLEDColors(color1, color2, color3, color4);
+            }
+
+            updateLEDColors(color1, color2, color3, color4) {
+                const colorMap = {
+                    red: '#e74c3c',
+                    green: '#2ecc71',
+                    blue: '#3498db',
+                    orange: '#f39c12',
+                    purple: '#9b59b6',
+                    yellow: '#f1c40f',
+                    cyan: '#1abc9c',
+                    pink: '#e91e63'
+                };
+
+                const style = document.createElement('style');
+                style.textContent = `
+                    .led.${color1}.on {
+                        background: ${colorMap[color1]} !important;
+                        color: ${colorMap[color1]} !important;
+                    }
+                    .led.${color2}.on {
+                        background: ${colorMap[color2]} !important;
+                        color: ${colorMap[color2]} !important;
+                    }
+                    .led.${color3}.on {
+                        background: ${colorMap[color3]} !important;
+                        color: ${colorMap[color3]} !important;
+                    }
+                    .led.${color4}.on {
+                        background: ${colorMap[color4]} !important;
+                        color: ${colorMap[color4]} !important;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            updateDisplay() {
+                this.elements.frequency.textContent = `${this.frequency.toFixed(2)} Hz`;
+                this.elements.period.textContent = `${(1/this.frequency).toFixed(2)} s`;
+            }
+        }
+
+        // Initialize simulator when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new AstableMultivibratorSimulator();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9941da9ce3a8e782',t:'MTc2MTM5Njc3Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
